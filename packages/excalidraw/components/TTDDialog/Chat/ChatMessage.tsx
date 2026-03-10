@@ -62,6 +62,31 @@ export const ChatMessage: React.FC<{
     return date.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
   };
 
+  const renderMessageContent = (content: string): React.ReactNode => {
+    if (!content) return null;
+    const thinkRegex = /<think>([\s\S]*?)(?:<\/think>|$)/;
+    const match = content.match(thinkRegex);
+    if (match) {
+      const beforeThink = content.substring(0, match.index);
+      const thinkContent = match[1];
+      const afterThink = content.substring(match.index! + match[0].length);
+      
+      return (
+        <React.Fragment>
+          {beforeThink && <pre style={{ whiteSpace: "pre-wrap", margin: 0, fontFamily: "inherit" }}>{beforeThink}</pre>}
+          <details className="chat-message__think-block" style={{ margin: "10px 0", background: "var(--color-gray-10, rgba(0,0,0,0.05))", padding: "8px", borderRadius: "8px" }}>
+            <summary style={{ cursor: "pointer", fontWeight: "bold", opacity: 0.7 }}>Thinking Process</summary>
+            <div style={{ marginTop: "8px", opacity: 0.8, fontSize: "0.9em", whiteSpace: "pre-wrap" }}>
+              {thinkContent}
+            </div>
+          </details>
+          {renderMessageContent(afterThink)}
+        </React.Fragment>
+      );
+    }
+    return <pre style={{ whiteSpace: "pre-wrap", margin: 0, fontFamily: "inherit" }}>{content}</pre>;
+  };
+
   if (message.type === "warning") {
     const customOverride = renderWarning?.(message);
     return (
@@ -156,8 +181,8 @@ export const ChatMessage: React.FC<{
               )}
             </>
           ) : (
-            <div className="chat-message__text">
-              {message.content}
+            <div className="chat-message__text" style={{ overflowX: "auto" }}>
+              {renderMessageContent(message.content || "")}
               {message.isGenerating && (
                 <span className="chat-message__cursor">▋</span>
               )}

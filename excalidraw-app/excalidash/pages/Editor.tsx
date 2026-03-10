@@ -1,7 +1,7 @@
 // @ts-nocheck
 import React, { useCallback, useEffect, useState, useRef } from 'react';
 import { useParams, useNavigate, useLocation } from 'react-router-dom';
-import { ArrowLeft, Download, Loader2, ChevronUp, ChevronDown, Share2, Copy, Wand2 } from 'lucide-react';
+import { ArrowLeft, Download, Loader2, ChevronUp, ChevronDown, Share2, Copy, Wand2, Settings } from 'lucide-react';
 import { convertToMermaid } from '../utils/mermaid';
 import clsx from 'clsx';
 import { Excalidraw, exportToSvg } from '@excalidraw/excalidraw';
@@ -111,6 +111,10 @@ export const Editor: React.FC = () => {
   const [isShareOpen, setIsShareOpen] = useState(false);
   const [showMermaidModal, setShowMermaidModal] = useState(false);
   const [mermaidCode, setMermaidCode] = useState('');
+  const [showSystemPromptModal, setShowSystemPromptModal] = useState(false);
+  const [systemPrompt, setSystemPrompt] = useState(
+    "You are a helpful assistant that generates Mermaid diagrams. Output ONLY valid Mermaid code, starting with ```mermaid, without any explanation. Remember to wrap the code block properly."
+  );
   
   const me: UserIdentity = useEditorIdentity(user);
   // The server can override the identity id (notably for share-link sessions) to prevent spoofing.
@@ -1617,7 +1621,7 @@ export const Editor: React.FC = () => {
                 isCollabEnabled={false}
                 onCollabDialogOpen={() => {}}
               />
-              {excalidrawAPI.current && <AIComponents excalidrawAPI={excalidrawAPI.current} />}
+              {excalidrawAPI.current && <AIComponents excalidrawAPI={excalidrawAPI.current} systemPrompt={systemPrompt} />}
             </Excalidraw>
 
             {/* Top-Left Home Button Overlay */}
@@ -1655,7 +1659,37 @@ export const Editor: React.FC = () => {
               >
                 <Copy size={20} />
               </button>
+
+              <button
+                onClick={() => setShowSystemPromptModal(true)}
+                className="w-10 h-10 flex items-center justify-center bg-white dark:bg-neutral-800 border-[1px] border-zinc-200 dark:border-neutral-700 rounded-xl shadow-[1px_1px_0px_0px_rgba(0,0,0,0.1)] hover:shadow-[2px_2px_0px_0px_rgba(0,0,0,0.2)] hover:-translate-y-0.5 transition-all text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-amber-500"
+                title="AI Settings"
+                style={{ pointerEvents: 'auto' }}
+              >
+                <Settings size={20} />
+              </button>
             </div>
+            
+            {showSystemPromptModal && (
+              <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
+                <div className="bg-white dark:bg-neutral-900 rounded-xl shadow-xl w-full max-w-2xl border border-gray-200 dark:border-neutral-700 flex flex-col p-6">
+                  <h3 className="font-bold text-lg text-slate-900 dark:text-white mb-4">AI Generator Settings</h3>
+                  <textarea 
+                    value={systemPrompt}
+                    onChange={(e) => setSystemPrompt(e.target.value)}
+                    className="w-full h-40 p-4 border rounded-lg bg-gray-50 dark:bg-neutral-800 dark:text-gray-100 text-sm font-mono mb-4 border-gray-200 dark:border-neutral-700"
+                  />
+                  <div className="flex justify-end">
+                    <button 
+                      onClick={() => setShowSystemPromptModal(false)}
+                      className="px-4 py-2 bg-indigo-600 text-white font-medium rounded-lg hover:bg-indigo-700 transition-colors"
+                    >
+                      Save & Close
+                    </button>
+                  </div>
+                </div>
+              </div>
+            )}
             
             {showMermaidModal && (
               <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">

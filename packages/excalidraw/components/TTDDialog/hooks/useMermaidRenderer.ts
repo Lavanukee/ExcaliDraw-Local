@@ -104,7 +104,15 @@ export const useMermaidRenderer = ({
       const timeSinceLastRender = now - lastRenderTimeRef.current;
       const throttleDelay = currentThrottleDelayRef.current;
 
-      if (!isValidMermaidSyntax(content)) {
+      let parsedContent = content;
+      const mermaidMatch = content.match(/```(?:mermaid)?\n?([\s\S]*?)(?:```|$)/);
+      if (mermaidMatch) {
+        parsedContent = mermaidMatch[1].trim();
+      } else {
+        parsedContent = content.replace(/<think>[\s\S]*?(?:<\/think>|$)/g, '').trim();
+      }
+
+      if (!isValidMermaidSyntax(parsedContent)) {
         if (!hasErrorOffsetRef.current) {
           lastRenderTimeRef.current = Math.max(
             lastRenderTimeRef.current,
@@ -112,19 +120,19 @@ export const useMermaidRenderer = ({
           );
           hasErrorOffsetRef.current = true;
         }
-        pendingContentRef.current = content;
+        pendingContentRef.current = parsedContent;
         return;
       }
 
       hasErrorOffsetRef.current = false;
 
       if (timeSinceLastRender < throttleDelay) {
-        pendingContentRef.current = content;
+        pendingContentRef.current = parsedContent;
         return;
       }
 
       pendingContentRef.current = null;
-      const success = await renderMermaid(content);
+      const success = await renderMermaid(parsedContent);
       lastRenderTimeRef.current = Date.now();
 
       if (!success) {

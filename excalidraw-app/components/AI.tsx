@@ -15,8 +15,10 @@ import { TTDIndexedDBAdapter } from "../data/TTDStorage";
 
 export const AIComponents = ({
   excalidrawAPI,
+  systemPrompt,
 }: {
   excalidrawAPI: ExcalidrawImperativeAPI;
+  systemPrompt: string;
 }) => {
   return (
     <>
@@ -118,13 +120,13 @@ export const AIComponents = ({
         onTextSubmit={async (props) => {
           const { onChunk, onStreamCreated, signal, messages } = props;
 
-          const systemPrompt = {
+          const sysPrompt = {
             role: "system",
-            content: "You are a helpful assistant that generates Mermaid diagrams. Output ONLY valid Mermaid code, starting with ```mermaid, without any explanation.",
+            content: systemPrompt,
           };
           const result = await TTDStreamFetch({
             url: "http://127.0.0.1:8080/v1/chat/completions",
-            messages: [systemPrompt as any, ...messages],
+            messages: [sysPrompt as any, ...messages],
             onChunk,
             onStreamCreated,
             extractRateLimits: false,
