@@ -2,7 +2,7 @@
 import React, { useCallback, useEffect, useState, useRef } from 'react';
 import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import { ArrowLeft, Download, Loader2, ChevronUp, ChevronDown, Share2, Copy, Wand2 } from 'lucide-react';
-import { excalidrawV2ToMermaidFlowChart } from '@excalidraw-to-mermaid/core';
+import { convertToMermaid } from '../utils/mermaid';
 import clsx from 'clsx';
 import { Excalidraw, exportToSvg } from '@excalidraw/excalidraw';
 import debounce from 'lodash/debounce';
@@ -1543,7 +1543,7 @@ export const Editor: React.FC = () => {
     }
     
     try {
-      const mermaid = excalidrawV2ToMermaidFlowChart('TB', { elements: targetElements });
+      const mermaid = convertToMermaid(targetElements);
       setMermaidCode(mermaid);
       setShowMermaidModal(true);
     } catch (e) {
