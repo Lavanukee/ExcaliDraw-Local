@@ -16,6 +16,7 @@ import {
   actionToggleSearchMenu,
   actionToggleStats,
   actionToggleTheme,
+  actionChangeGridType,
   actionToggleZenMode,
 } from "../../actions";
 import { actionToggleViewMode } from "../../actions/actionToggleViewMode";
@@ -54,8 +55,11 @@ import {
   TrashIcon,
   usersIcon,
 } from "../icons";
+import { GridType } from "../../types";
 
 import "./DefaultItems.scss";
+import DropdownMenu from "../dropdownMenu/DropdownMenu";
+import { RadioGroup } from "../RadioGroup";
 
 export const LoadScene = () => {
   const { t } = useI18n();
@@ -225,14 +229,14 @@ ClearCanvas.displayName = "ClearCanvas";
 export const ToggleTheme = (
   props:
     | {
-        allowSystemTheme: true;
-        theme: Theme | "system";
-        onSelect: (theme: Theme | "system") => void;
-      }
+      allowSystemTheme: true;
+      theme: Theme | "system";
+      onSelect: (theme: Theme | "system") => void;
+    }
     | {
-        allowSystemTheme?: false;
-        onSelect?: (theme: Theme) => void;
-      },
+      allowSystemTheme?: false;
+      onSelect?: (theme: Theme) => void;
+    },
 ) => {
   const { t } = useI18n();
   const appState = useUIAppState();
@@ -334,6 +338,47 @@ export const ChangeCanvasBackground = () => {
   );
 };
 ChangeCanvasBackground.displayName = "ChangeCanvasBackground";
+
+export const ChangeGridType = () => {
+  const { t } = useI18n();
+  const appState = useUIAppState();
+  const actionManager = useExcalidrawActionManager();
+
+  if (appState.viewModeEnabled) {
+    return null;
+  }
+
+  return (
+    <div style={{ marginTop: "0.5rem" }}>
+      <div
+        data-testid="grid-type-label"
+        style={{ fontSize: ".75rem", marginBottom: ".5rem" }}
+      >
+        Grid Type
+      </div>
+      <div>
+        <select
+          style={{ width: "100%" }}
+          className="dropdown-select dropdown-select__language"
+          name="gridType"
+          value={appState.gridType}
+          onChange={(e) => {
+            actionManager.executeAction(
+              actionChangeGridType,
+              "ui",
+              { gridType: Number.parseInt(e.target.value) as GridType }
+            );
+          }}
+        >
+          <option value={GridType.DEFAULT}>Default</option>
+          <option value={GridType.DOT}>Dot</option>
+          <option value={GridType.ISOMETRIC_DOT}>Isometric Dot</option>
+        </select>
+      </div>
+    </div>
+  );
+};
+ChangeGridType.displayName = "ChangeGridType";
 
 export const Export = () => {
   const { t } = useI18n();
