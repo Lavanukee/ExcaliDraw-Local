@@ -191,7 +191,12 @@ export const useTextGeneration = ({
       }
 
       try {
-        await parseMermaidToExcalidraw(generatedResponse ?? "");
+        let finalResponse = generatedResponse ?? "";
+        const mermaidMatch = finalResponse.match(/```(?:mermaid)?\n?([\s\S]*?)```/);
+        if (mermaidMatch) {
+          finalResponse = mermaidMatch[1].trim();
+        }
+        await parseMermaidToExcalidraw(finalResponse);
         trackEvent("ai", "mermaid parse success", "ttd");
       } catch (error: any) {
         trackEvent("ai", "mermaid parse failed", "ttd");
