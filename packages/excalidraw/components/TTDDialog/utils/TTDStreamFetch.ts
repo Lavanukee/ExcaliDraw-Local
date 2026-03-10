@@ -104,7 +104,11 @@ export async function TTDStreamFetch(
         Accept: "text/event-stream",
         "Content-Type": "application/json",
       },
-      body: JSON.stringify({ messages }),
+      body: JSON.stringify({ 
+        model: "llama",
+        messages,
+        stream: true
+      }),
       signal,
     });
 
@@ -148,29 +152,24 @@ export async function TTDStreamFetch(
         }
 
         try {
-          const chunk: StreamChunk = JSON.parse(data);
+          const chunk = JSON.parse(data);
 
           if (chunk === null) {
             break;
           }
 
-          switch (chunk.type) {
-            case "content": {
-              const delta = chunk.delta;
-              if (delta) {
-                fullResponse += delta;
-                onChunk?.(delta);
-              }
-              break;
-            }
-            case "error":
-              error = new RequestError({
-                message: chunk.error.message,
-                status: 500,
-              });
-              break;
-            case "done":
-              break;
+          if (chunk.error) {
+            error = new RequestError({
+              message: chunk.error.message,
+              status: 500,
+            });
+            break;
+          }
+
+          const delta = chunk.choices?.[0]?.delta?.content;
+          if (delta) {
+            fullResponse += delta;
+            onChunk?.(delta);
           }
         } catch (e) {
           console.warn("Failed to parse SSE data:", data, e);

@@ -40,10 +40,9 @@ export const AIComponents = ({
 
           const textFromFrameChildren = getTextFromElements(children);
 
+          const prompt = `Convert this diagram to a single HTML file containing CSS and JS. Follow the theme: ${appState.theme}. Context texts: ${textFromFrameChildren}. Return ONLY valid HTML code, nothing else.`;
           const response = await fetch(
-            `${
-              import.meta.env.VITE_APP_AI_BACKEND
-            }/v1/ai/diagram-to-code/generate`,
+            "http://127.0.0.1:8080/v1/chat/completions",
             {
               method: "POST",
               headers: {
@@ -51,9 +50,16 @@ export const AIComponents = ({
                 "Content-Type": "application/json",
               },
               body: JSON.stringify({
-                texts: textFromFrameChildren,
-                image: dataURL,
-                theme: appState.theme,
+                model: "llava",
+                messages: [
+                  {
+                    role: "user",
+                    content: [
+                      { type: "text", text: prompt },
+                      { type: "image_url", image_url: { url: dataURL } },
+                    ],
+                  },
+                ],
               }),
             },
           );
@@ -87,7 +93,14 @@ export const AIComponents = ({
           }
 
           try {
-            const { html } = await response.json();
+            const data = await response.json();
+            let html = data.choices?.[0]?.message?.content || "";
+            
+            if (html.startsWith("```html")) {
+              html = html.replace(/^```html\n/, "").replace(/\n```$/, "");
+            } else if (html.startsWith("```")) {
+              html = html.replace(/^```\n/, "").replace(/\n```$/, "");
+            }
 
             if (!html) {
               throw new Error("Generation failed (invalid response)");
@@ -105,14 +118,16 @@ export const AIComponents = ({
         onTextSubmit={async (props) => {
           const { onChunk, onStreamCreated, signal, messages } = props;
 
+          const systemPrompt = {
+            role: "system",
+            content: "You are a helpful assistant that generates Mermaid diagrams. Output ONLY valid Mermaid code, starting with ```mermaid, without any explanation.",
+          };
           const result = await TTDStreamFetch({
-            url: `${
-              import.meta.env.VITE_APP_AI_BACKEND
-            }/v1/ai/text-to-diagram/chat-streaming`,
-            messages,
+            url: "http://127.0.0.1:8080/v1/chat/completions",
+            messages: [systemPrompt as any, ...messages],
             onChunk,
             onStreamCreated,
-            extractRateLimits: true,
+            extractRateLimits: false,
             signal,
           });
 

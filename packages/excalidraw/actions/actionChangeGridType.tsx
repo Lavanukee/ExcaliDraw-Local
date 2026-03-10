@@ -8,7 +8,7 @@ export const actionChangeGridType = register({
 	label: "labels.changeGridType",
 	trackEvent: { category: "canvas" },
     viewMode: true,
-	perform(elements, appState: Readonly<AppState>, value: { gridType: GridType }) {
+	perform(elements, appState: Readonly<AppState>, value: any) {
 		return {
 			appState: { ...appState, gridType: value.gridType },
 			captureUpdate: CaptureUpdateAction.EVENTUALLY,

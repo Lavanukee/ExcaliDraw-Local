@@ -69,7 +69,7 @@ const strokeGrid = (
   gridType?: GridType,
 ) => {
   if (gridType === undefined || gridType === GridType.DEFAULT) {
-    strokeDefaultGrid(context, gridSize, gridStep, scrollX, scrollY, zoom, width, height);
+    strokeDefaultGrid(context, gridSize, gridStep, scrollX, scrollY, zoom, theme, width, height);
   } else if (gridType === GridType.DOT) {
     strokeDotGrid(context, gridSize, scrollX, scrollY, zoom, width, height);
   } else if (gridType === GridType.ISOMETRIC_DOT) {
@@ -86,6 +86,7 @@ const strokeDefaultGrid = (
   scrollX: number,
   scrollY: number,
   zoom: Zoom,
+  theme: StaticCanvasRenderConfig["theme"],
   width: number,
   height: number,
 ) => {
